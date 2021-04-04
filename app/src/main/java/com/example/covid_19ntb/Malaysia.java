@@ -1,0 +1,92 @@
+package com.example.covid_19ntb;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class Malaysia extends Fragment {
+
+    private TextView malaysia;
+
+    public Malaysia() {
+        // Required empty public constructor
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
+        View view = inflater.inflate(R.layout.fragment_malaysia, container, false);
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle saveInstanceState){
+        super.onViewCreated(view, saveInstanceState);
+
+        malaysia = getActivity().findViewById(R.id.malaysia);
+
+        Retrofit retro = new Retrofit.Builder()
+                .baseUrl("https://api.covid19api.com/live/country/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        JsonPlaceHolderAPIMalaysia jsonPlace = retro.create(JsonPlaceHolderAPIMalaysia.class);
+
+        Call<List<Data>> call = jsonPlace.getData();
+
+        call.enqueue(new Callback<List<Data>>(){
+            @Override
+            public void onResponse(Call<List<Data>> call, Response<List<Data>> response) {
+                if(!response.isSuccessful()) {
+                    malaysia.setText("Code : "+ response.code());
+                    return;
+                }
+
+                List<Data> data1 = response.body();
+
+                for(Data data : data1) {
+                    String content ="";
+                    content += "Tanggal : " + data.getDate() + "\n";
+                    content += "Terkonfirmasi : " + data.getConfirmed() + "\n";
+                    content += "Meninggal : " + data.getDeaths() + "\n";
+                    content += "Sembuh : " + data.getRecovered() + "\n";
+                    content += "Aktif : " + data.getActive() + "\n\n";
+
+
+                    malaysia.append(content);
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<List<Data>> call, Throwable t) {
+                malaysia.setText(t.getMessage());
+            }
+        });
+
+
+
+
+    }
+
+
+
+}
